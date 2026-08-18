@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0" />
+
+		<title>AL-KAUNI</title>
+
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script src="https://unpkg.com/lucide@latest"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap"
+			rel="stylesheet" />
+		<!-- <link
+			href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@400;600;700&display=swap"
+			rel="stylesheet" /> -->
+
+		<style>
+			* {
+				transition: all 0.25s ease;
+				box-sizing: border-box;
+			}
+
+			body {
+				background: radial-gradient(circle at top, #1b4332 0%, #0f3d3e 35%, #0b2c2e 65%, #081c15 100%);
+
+				color: #ecfdf5;
+				min-height: 100vh;
+				font-family: "Poppins", sans-serif;
+			}
+
+			.glass {
+				background: rgba(11, 44, 46, 0.82);
+
+				backdrop-filter: blur(16px);
+				-webkit-backdrop-filter: blur(16px);
+
+				border: 1px solid rgba(94, 234, 212, 0.08);
+
+				box-shadow:
+					0 10px 30px rgba(0, 0, 0, 0.35),
+					inset 0 0 20px rgba(255, 255, 255, 0.02);
+			}
+
+			.glass:hover {
+				transform: translateY(-3px);
+				border-color: rgba(94, 234, 212, 0.25);
+				box-shadow:
+					0 15px 35px rgba(0, 137, 123, 0.25),
+					0 0 25px rgba(94, 234, 212, 0.12);
+			}
+
+			svg {
+				display: inline-block;
+				vertical-align: middle;
+			}
+
+			[data-lucide] {
+				width: 20px;
+				height: 20px;
+				color: #5eead4;
+				flex-shrink: 0;
+			}
+
+			.btn {
+				width: 100%;
+				padding: 12px;
+				border-radius: 14px;
+				border: none;
+				cursor: pointer;
+				font-weight: 600;
+
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 8px;
+				color: white;
+				background: linear-gradient(135deg, #006d5b, #00897b);
+			}
+
+			.btn:hover {
+				background: linear-gradient(135deg, #00897b, #26a69a);
+				transform: translateY(-2px);
+				box-shadow: 0 0 25px rgba(0, 137, 123, 0.35);
+			}
+
+			input {
+				transition: 0.25s;
+				color: white;
+			}
+
+			input::placeholder {
+				color: #94a3b8;
+			}
+
+			input:focus {
+				color: white;
+			}
+
+			input:focus::placeholder {
+				color: #cbd5e1;
+			}
+
+			.glass input:focus {
+				outline: none;
+			}
+
+			.glass div:has(input:focus) {
+				border-color: #26a69a;
+
+				box-shadow:
+					0 0 0 1px rgba(38, 166, 154, 0.35),
+					0 0 20px rgba(38, 166, 154, 0.15);
+			}
+
+			table {
+				color: #ecfdf5;
+			}
+
+			.table-scroll {
+				overflow-x: auto;
+				overflow-y: hidden;
+				border-radius: 16px;
+			}
+
+			.table-scroll::-webkit-scrollbar {
+				height: 8px;
+			}
+
+			.table-scroll::-webkit-scrollbar-track {
+				background: rgba(255, 255, 255, 0.05);
+				border-radius: 10px;
+			}
+
+			.table-scroll::-webkit-scrollbar-thumb {
+				background: #0f766e;
+				border-radius: 10px;
+			}
+
+			.table-scroll::-webkit-scrollbar-thumb:hover {
+				background: #14b8a6;
+			}
+
+			thead {
+				background: #0f3d3e;
+			}
+
+			thead th {
+				padding: 12px;
+				color: #a7f3d0;
+				font-weight: 600;
+			}
+
+			tbody tr {
+				border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+			}
+
+			tbody tr:hover {
+				background: rgba(0, 137, 123, 0.12);
+			}
+
+			tbody td {
+				padding: 10px;
+			}
+
+			.page-btn {
+				width: 36px;
+				height: 36px;
+				border-radius: 10px;
+				background: #14532d;
+				color: white;
+				font-weight: bold;
+			}
+
+			.page-btn:hover {
+				background: #00897b;
+			}
+
+			.page-btn.active {
+				background: #26a69a;
+				color: white;
+			}
+
+			::-webkit-scrollbar {
+				width: 10px;
+				height: 10px;
+			}
+
+			::-webkit-scrollbar-track {
+				background: #081c15;
+			}
+
+			::-webkit-scrollbar-thumb {
+				background: #006d5b;
+
+				border-radius: 10px;
+			}
+
+			::-webkit-scrollbar-thumb:hover {
+				background: #26a69a;
+			}
+
+			h1 {
+				color: #a7f3d0;
+				font-weight: 700;
+			}
+
+			h2 {
+				color: #5eead4;
+				text-shadow: 0 0 10px rgba(94, 234, 212, 0.25);
+				font-weight: 600;
+			}
+
+			p {
+				color: #b7d8ce;
+			}
+
+			.status-online {
+				background: #083d33;
+				color: #86efac;
+				border: 1px solid #0faf8d;
+				padding: 4px 10px;
+				border-radius: 999px;
+			}
+
+			.status-offline {
+				background: #4b1f1f;
+				color: #fca5a5;
+				border: 1px solid #dc2626;
+				padding: 4px 10px;
+				border-radius: 999px;
+			}
+
+			.card-title {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				font-weight: 700;
+				color: #7ee8d8;
+			}
+
+			.sensor-value {
+				font-size: 2.5rem;
+				font-weight: 700;
+				color: #ecfdf5;
+			}
+
+			.sensor-unit {
+				font-size: 0.95rem;
+				color: #9fd6c7;
+			}
+
+			.sensor-normal {
+				color: #4ade80;
+			}
+
+			.sensor-warning {
+				color: #facc15;
+			}
+
+			.sensor-danger {
+				color: #f87171;
+			}
+
+			.card-footer {
+				border-top: 1px solid rgba(255, 255, 255, 0.05);
+				padding-top: 12px;
+				margin-top: 12px;
+			}
+
+			.chart-container {
+				position: relative;
+				width: 100%;
+				height: 420px;
+			}
+
+			.section-title {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				font-size: 1.15rem;
+				font-weight: 700;
+				color: #a7f3d0;
+				margin-bottom: 18px;
+			}
+
+			.badge {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				padding: 5px 12px;
+				border-radius: 999px;
+				font-size: 0.8rem;
+				font-weight: 600;
+				background: rgba(255, 255, 255, 0.05);
+			}
+
+			.shadow-green {
+				box-shadow: 0 0 25px rgba(38, 166, 154, 0.25);
+			}
+			.shadow-soft {
+				box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+			}
+			/* .arabic-logo {
+				margin-bottom: 7px;
+				font-family: "Aref Ruqaa", serif;
+				font-size: 1.6rem;
+				direction: rtl;
+				color: #a7f3d0;
+				text-shadow: 0 0 10px rgba(167, 243, 208, 0.4);
+			} */
+		</style>
+	</head>
+
+	<body class="min-h-screen">
+		<div class="max-w-7xl mx-auto p-5">
+			<!-- HEADER -->
+			<header class="glass p-5 rounded-3xl shadow mb-6">
+				<div class="flex flex-col lg:flex-row justify-between items-center gap-4">
+					<!-- Logo & Title -->
+					<div class="flex items-center gap-4">
+						<!-- LOGO -->
+						<div class="w-16 h-16 md:w-16 md:h-16 flex items-center justify-center overflow-hidden">
+							<img
+								src="assets/logo.png"
+								alt="Smart Environment Logo"
+								class="w-full h-full object-contain" />
+						</div>
+
+						<!-- TITLE -->
+						<div>
+							<h1 class="flex items-center gap-3">
+								<div class="flex items-center gap-3">
+									<span
+										class="text-3xl text-emerald-200"
+										style="font-family: &quot;Aref Ruqaa&quot;, serif; direction: rtl">
+										الكَوْنِيّ
+									</span>
+
+									<span class="text-2xl font-bold tracking-widest text-white"> AL-KAUNI </span>
+								</div>
+							</h1>
+						</div>
+					</div>
+
+					<!-- Right Side -->
+					<div class="flex items-center gap-6">
+						<!-- STATUS GROUP -->
+						<div class="flex flex-wrap items-center gap-4">
+							<!-- MQTT -->
+							<div class="flex items-center gap-2 text-sm">
+								<span class="text-slate-400 font-medium"> MQTT: </span>
+
+								<span
+									id="mqttStatus"
+									class="bg-slate-800 border border-slate-600 text-red-400 px-4 py-1 rounded-full font-medium shadow-sm">
+									● Disconnected
+								</span>
+							</div>
+
+							<!-- ESP32 -->
+							<div class="flex items-center gap-2 text-sm">
+								<span class="text-slate-400 font-medium"> ESP32: </span>
+
+								<span
+									id="espStatus"
+									class="bg-slate-800 border border-slate-600 text-red-400 px-4 py-1 rounded-full font-medium shadow-sm">
+									● Offline
+								</span>
+							</div>
+						</div>
+
+						<!-- Logout Button -->
+						<!-- <button
+							id="btnLogout"
+							class="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#5EEAD4]/30 bg-white/5 text-[#A7F3D0] font-medium backdrop-blur-md hover:bg-[#006D5B] hover:border-[#5EEAD4] hover:text-white transition-all duration-300">
+							<i
+								data-lucide="log-out"
+								class="w-4 h-4"></i>
+							Logout
+						</button> -->
+					</div>
+				</div>
+			</header>
+
+			<!-- SENSOR -->
+			<section class="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+				<!-- ==================== TDS ==================== -->
+				<div class="glass p-5 rounded-3xl shadow flex flex-col justify-between h-full">
+					<!-- Header -->
+					<div class="flex items-center gap-2 mb-5">
+						<i
+							data-lucide="droplets"
+							class="text-cyan-300"></i>
+						<h2 class="font-semibold text-lg text-cyan-300">TDS</h2>
+					</div>
+
+					<!-- Value -->
+					<div class="flex items-center justify-between mb-5">
+						<div class="flex items-end gap-2">
+							<h1
+								id="tdsValue"
+								class="text-4xl font-bold text-cyan-300">
+								-
+							</h1>
+
+							<span class="text-slate-400 mb-1"> ppm </span>
+						</div>
+
+						<span
+							id="tdsStatus"
+							class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-900/30 border border-green-700 text-green-300 text-sm">
+							<i
+								data-lucide="circle-check"
+								class="w-4 h-4"></i>
+
+							Normal
+						</span>
+					</div>
+
+					<!-- Footer -->
+					<div class="flex items-center justify-between border-t border-white/10 pt-4">
+						<div class="flex items-center gap-2 text-sm text-emerald-300">
+							<i
+								data-lucide="book-open"
+								class="w-4 h-4"></i>
+
+							QS. Al-Waqi'ah 56:68–70
+						</div>
+
+						<button
+							onclick="openModal('tdsModal')"
+							class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0F3D3E]/70 border border-[#5EEAD4]/20 text-[#A7F3D0] hover:bg-[#006D5B] transition">
+							<i
+								data-lucide="info"
+								class="w-4 h-4"></i>
+
+							Detail
+						</button>
+					</div>
+				</div>
+
+				<!-- Turbidity -->
+				<div class="glass p-5 rounded-3xl shadow flex flex-col justify-between h-full">
+					<!-- Header -->
+					<div class="flex items-center gap-2 mb-5">
+						<i
+							data-lucide="waves"
+							class="text-cyan-300"></i>
+						<h2 class="font-semibold text-lg text-cyan-300">Turbidity</h2>
+					</div>
+
+					<!-- Value & Status -->
+					<div class="flex items-center justify-between mb-5">
+						<div>
+							<div class="flex items-end gap-2">
+								<h1
+									id="turbidityValue"
+									class="text-4xl font-bold text-cyan-300">
+									-
+								</h1>
+
+								<span class="text-slate-400 mb-1"> NTU </span>
+							</div>
+						</div>
+
+						<span
+							id="turbidityStatus"
+							class="flex items-center gap-2 px-4 py-2 rounded-full bg-green-900/30 border border-green-700 text-green-300 text-sm font-medium">
+							<i
+								data-lucide="circle-check"
+								class="w-4 h-4"></i>
+
+							Clear
+						</span>
+					</div>
+
+					<!-- Ayat & Detail -->
+					<div class="flex items-center justify-between border-t border-white/10 pt-4">
+						<div class="flex items-center gap-2 text-sm text-emerald-300">
+							<i
+								data-lucide="book-open"
+								class="w-4 h-4"></i>
+							QS. An-Nur 24:40
+						</div>
+
+						<button
+							onclick="openModal('turbidityModal')"
+							class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0F3D3E]/80 border border-[#5EEAD4]/20 text-[#A7F3D0] text-sm hover:bg-[#006D5B] hover:border-[#5EEAD4] transition-all">
+							<i data-lucide="info"></i>
+
+							Detail
+						</button>
+					</div>
+				</div>
+
+				<!-- ==================== SOIL MOISTURE ==================== -->
+				<div class="glass p-5 rounded-3xl shadow flex flex-col justify-between h-full">
+					<!-- Header -->
+					<div class="flex items-center gap-2 mb-5">
+						<i
+							data-lucide="sprout"
+							class="text-cyan-300">
+						</i>
+
+						<h2 class="font-semibold text-lg text-cyan-300">Soil Moisture</h2>
+					</div>
+
+					<!-- Value -->
+					<div class="flex items-center justify-between mb-5">
+						<div class="flex items-end gap-2">
+							<h1
+								id="soilValue"
+								class="text-4xl font-bold text-cyan-300">
+								-
+							</h1>
+
+							<span class="text-slate-400 mb-1"> % </span>
+						</div>
+
+						<span
+							id="soilStatus"
+							class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-900/30 border border-green-700 text-green-300 text-sm font-medium">
+							<i
+								data-lucide="circle-check"
+								class="w-4 h-4">
+							</i>
+
+							Moist
+						</span>
+					</div>
+
+					<!-- Footer -->
+					<div class="flex items-center justify-between border-t border-white/10 pt-4">
+						<div class="flex items-center gap-2 text-sm text-emerald-300">
+							<i
+								data-lucide="book-open"
+								class="w-4 h-4">
+							</i>
+
+							QS. Ar-Rum 30:50
+						</div>
+
+						<button
+							onclick="openModal('soilModal')"
+							class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0F3D3E]/70 border border-[#5EEAD4]/20 text-[#A7F3D0] hover:bg-[#006D5B] transition">
+							<i
+								data-lucide="info"
+								class="w-4 h-4">
+							</i>
+
+							Detail
+						</button>
+					</div>
+				</div>
+
+				<!-- ==================== TEMPERATURE ==================== -->
+				<div class="glass p-5 rounded-3xl shadow flex flex-col justify-between h-full">
+					<!-- Header -->
+					<div class="flex items-center gap-2 mb-5">
+						<i
+							data-lucide="thermometer"
+							class="text-cyan-300">
+						</i>
+
+						<h2 class="font-semibold text-lg text-cyan-300">Temperature</h2>
+					</div>
+
+					<!-- Value -->
+					<div class="flex items-center justify-between mb-5">
+						<div class="flex items-end gap-2">
+							<h1
+								id="tempValue"
+								class="text-4xl font-bold text-cyan-300">
+								-
+							</h1>
+
+							<span class="text-slate-400 mb-1"> &deg;C </span>
+						</div>
+
+						<span
+							id="tempStatus"
+							class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-900/30 border border-green-700 text-green-300 text-sm font-medium">
+							<i
+								data-lucide="circle-check"
+								class="w-4 h-4">
+							</i>
+
+							Warm
+						</span>
+					</div>
+					<!-- Footer -->
+					<div class="flex items-center justify-between border-t border-white/10 pt-4">
+						<div class="flex items-center gap-2 text-sm text-emerald-300">
+							<i
+								data-lucide="book-open"
+								class="w-4 h-4">
+							</i>
+
+							QS. An-Nahl 16:81
+						</div>
+
+						<button
+							onclick="openModal('temperatureModal')"
+							class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0F3D3E]/70 border border-[#5EEAD4]/20 text-[#A7F3D0] hover:bg-[#006D5B] transition">
+							<i
+								data-lucide="info"
+								class="w-4 h-4">
+							</i>
+
+							Detail
+						</button>
+					</div>
+				</div>
+			</section>
+
+			<section class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+				<!-- DATA LOGGER -->
+				<div class="glass p-6 rounded-3xl shadow">
+					<div class="flex justify-between items-center mb-4">
+						<h2 class="text-cyan-300 flex items-center gap-2">
+							<i data-lucide="history"></i>
+							Data Logger
+						</h2>
+					</div>
+
+					<div class="table-scroll border border-white/10 rounded-2xl">
+						<table class="min-w-[900px] w-full text-sm">
+							<thead class="border-b">
+								<tr>
+									<th class="text-center py-2">No.</th>
+									<th class="text-center py-2">Time</th>
+									<th class="text-center py-2">TDS (ppm)</th>
+									<th class="text-center py-2">Turbidity (NTU)</th>
+									<th class="text-center py-2">Soil Moist. (%)</th>
+									<th class="text-center py-2">Temp. (C)</th>
+								</tr>
+							</thead>
+
+							<tbody id="sensorLogBody"></tbody>
+						</table>
+					</div>
+					<div
+						id="sensorLogPagination"
+						class="flex flex-wrap justify-center items-center gap-2 mt-4"></div>
+				</div>
+
+				<!-- CHART -->
+				<div class="glass p-6 rounded-3xl shadow">
+					<h2 class="text-cyan-300 mb-4 flex items-center gap-2">
+						<i data-lucide="activity"></i>
+						Trend Data Sensor Realtime
+					</h2>
+					<div class="h-72">
+						<canvas id="myChart"></canvas>
+					</div>
+				</div>
+			</section>
+
+			<section class="grid md:grid-cols-2 gap-5 mt-6">
+				<!-- WATERING SYSTEM -->
+				<div class="glass p-5 md:p-6 rounded-3xl shadow">
+					<!-- Header -->
+					<div class="flex items-center gap-2 mb-3">
+						<i
+							data-lucide="droplets"
+							class="w-6 h-6 text-cyan-300"></i>
+						<h2 class="text-lg font-semibold text-cyan-300">Watering System</h2>
+					</div>
+
+					<!-- Sensor Values -->
+					<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+						<!-- ================= Rain Status ================= -->
+						<div class="flex flex-col items-center rounded-2xl bg-slate-900/20 p-4">
+							<!-- Icon + Value -->
+							<div class="flex items-center gap-2">
+								<span id="rainIcon">
+									<i
+										data-lucide="cloud-rain"
+										class="w-8 h-8 text-blue-400">
+									</i>
+								</span>
+
+								<span
+									id="rainValue"
+									class="text-2xl font-bold tracking-wide text-blue-400">
+									Rain
+								</span>
+							</div>
+
+							<!-- Label -->
+							<span class="mt-2 text-sm text-slate-400"> Rain Status </span>
+						</div>
+
+						<!-- ================= Water Pump ================= -->
+						<div class="flex flex-col items-center rounded-2xl bg-slate-900/20 p-4">
+							<!-- Icon + Switch -->
+							<div class="flex items-center gap-3">
+								<span id="toggleIcon">
+									<i
+										data-lucide="power"
+										class="w-7 h-7 text-red-400 transition-colors duration-300">
+									</i>
+								</span>
+
+								<label class="relative inline-flex items-center cursor-pointer">
+									<input
+										id="relaySwitch"
+										type="checkbox"
+										class="sr-only peer"
+										onchange="toggleRelay(this.checked)" />
+
+									<div
+										class="relative w-14 h-8 rounded-full bg-slate-700 peer-checked:bg-emerald-500 transition-all duration-300 after:absolute after:left-1 after:top-1 after:h-6 after:w-6 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-6"></div>
+								</label>
+							</div>
+
+							<!-- Label -->
+							<span class="mt-2 text-sm text-slate-400"> Water Pump </span>
+						</div>
+
+						<!-- ================= Humidity ================= -->
+						<div class="flex flex-col items-center rounded-2xl bg-slate-900/20 p-4">
+							<!-- Icon + Value -->
+							<div class="flex items-end gap-2">
+								<i
+									data-lucide="droplet"
+									class="w-8 h-8 text-cyan-400">
+								</i>
+
+								<div class="flex items-end gap-1">
+									<span
+										id="humValue"
+										class="text-2xl font-bold tracking-wide text-cyan-400">
+										-
+									</span>
+
+									<span class="text-xl text-cyan-400 mb-0.5"> % </span>
+								</div>
+							</div>
+
+							<!-- Label -->
+							<span class="mt-2 text-sm text-slate-400"> Humidity </span>
+						</div>
+					</div>
+
+					<!-- Ayat Kauniyah -->
+					<div class="mt-3 rounded-2xl border border-cyan-700/40 bg-slate-900/40 p-5">
+						<!-- Header -->
+						<div class="flex items-center justify-between pb-3 border-b border-slate-700/60">
+							<div class="flex items-center gap-2">
+								<i
+									data-lucide="book-open"
+									class="w-4 h-4 text-cyan-400"></i>
+								<span class="text-xs uppercase tracking-widest font-semibold text-cyan-400"> Ayat Kauniyah </span>
+							</div>
+
+							<span class="text-sm font-semibold text-cyan-300"> QS. Qaf (50): 9 </span>
+						</div>
+
+						<!-- Arabic -->
+						<p
+							class="mt-5 text-2xl md:text-3xl leading-loose text-right text-white"
+							style="font-family: &quot;Amiri&quot;, serif; direction: rtl">
+							وَنَزَّلْنَا مِنَ السَّمَاءِ مَاءً مُّبَارَكًا فَأَنبَتْنَا بِهِ جَنَّاتٍ وَحَبَّ الْحَصِيدِ
+						</p>
+
+						<!-- Translation -->
+						<p class="mt-4 text-sm italic leading-relaxed text-slate-300 text-justify">
+							"...Dan Kami turunkan dari langit air yang diberkahi, lalu Kami tumbuhkan dengannya kebun-kebun dan biji-bijian yang dapat dipanen."
+						</p>
+					</div>
+				</div>
+
+				<!-- MQTT -->
+				<div class="glass p-6 rounded-3xl shadow">
+					<h2 class="text-cyan-300 mb-5 flex items-center gap-2">
+						<i data-lucide="settings"></i>
+						MQTT Config
+					</h2>
+
+					<!-- FORM VERTICAL -->
+					<div class="space-y-4">
+						<!-- BROKER -->
+						<div class="flex items-center gap-3 border border-slate-600 rounded-xl p-3 bg-slate-800/60">
+							<i
+								data-lucide="server"
+								class="text-cyan-300">
+							</i>
+
+							<input
+								id="mqttBroker"
+								class="w-full bg-transparent text-slate-100 placeholder-slate-500 outline-none"
+								placeholder="Broker" />
+						</div>
+
+						<!-- PORT -->
+						<div class="flex items-center gap-3 border border-slate-600 rounded-xl p-3 bg-slate-800/60">
+							<i
+								data-lucide="plug"
+								class="text-cyan-300">
+							</i>
+
+							<input
+								id="mqttPort"
+								class="w-full bg-transparent text-slate-100 placeholder-slate-500 outline-none"
+								placeholder="Port" />
+						</div>
+
+						<!-- TOPIC SENSOR -->
+						<div class="flex items-center gap-3 border border-slate-600 rounded-xl p-3 bg-slate-800/60">
+							<i
+								data-lucide="droplets"
+								class="text-cyan-300">
+							</i>
+
+							<input
+								id="sensorTopic"
+								class="w-full bg-transparent text-slate-100 placeholder-slate-500 outline-none"
+								placeholder="Topic Sensor (autoformat: rizkyproject/alkauni_sensor/...)" />
+						</div>
+
+						<!-- TOPIC STATUS -->
+						<div class="flex items-center gap-3 border border-slate-600 rounded-xl p-3 bg-slate-800/60">
+							<i
+								data-lucide="wifi"
+								class="text-cyan-300">
+							</i>
+
+							<input
+								id="statusTopic"
+								class="w-full bg-transparent text-slate-100 placeholder-slate-500 outline-none"
+								placeholder="Topic Status (autoformat: rizkyproject/alkauni_status/...)" />
+						</div>
+
+						<!-- SAVE BUTTON -->
+						<button
+							onclick="saveMqttConfig()"
+							class="btn bg-cyan-600 hover:bg-cyan-500 text-white shadow-lg shadow-cyan-900/40 transition duration-300">
+							<i data-lucide="save"></i>
+
+							Save MQTT
+						</button>
+					</div>
+				</div>
+			</section>
+
+			<!-- TDS MODAL -->
+			<div
+				id="tdsModal"
+				class="modal fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm overflow-y-auto">
+				<div class="flex justify-center items-center w-full min-h-screen p-4">
+					<div class="glass relative w-full max-w-2xl rounded-3xl max-h-[90vh] overflow-y-auto p-6 md:p-8">
+						<!-- Close -->
+						<button
+							onclick="closeModal('tdsModal')"
+							class="absolute top-5 right-5 rounded-full bg-[#0F3D3E]/90 p-2 border border-[#5EEAD4]/20 text-slate-300 hover:bg-[#006D5B] hover:text-white">
+							<i data-lucide="x"></i>
+						</button>
+
+						<!-- Header -->
+						<div class="flex items-center gap-3 mb-6">
+							<i
+								data-lucide="droplets"
+								class="w-7 h-7 text-cyan-300"></i>
+
+							<div>
+								<h2 class="text-2xl font-bold">TDS</h2>
+
+								<p class="text-slate-400">Total Dissolved Solids</p>
+							</div>
+						</div>
+
+						<!-- Ayat -->
+						<div class="bg-[#0F3D3E]/60 border border-[#5EEAD4]/20 rounded-2xl p-4 mb-6">
+							<p class="text-slate-400 text-sm">Ayat Kauniyah</p>
+
+							<h3 class="text-lg font-semibold text-emerald-300">QS. Al-Waqi'ah (56): 68–70</h3>
+						</div>
+
+						<!-- Arabic -->
+						<div class="mb-6">
+							<p class="text-right text-3xl leading-loose text-slate-100">
+								أَفَرَءَيْتُمُ ٱلْمَآءَ ٱلَّذِى تَشْرَبُونَ ۝٦٨ ءَأَنتُمْ أَنزَلْتُمُوهُ مِنَ ٱلْمُزْنِ أَمْ نَحْنُ ٱلْمُنزِلُونَ ۝٦٩ لَوْ نَشَآءُ جَعَلْنَٰهُ أُجَاجًا فَلَوْلَا تَشْكُرُونَ ۝٧٠
+							</p>
+						</div>
+
+						<!-- Translation -->
+						<div class="space-y-3 text-slate-300">
+							<p>"Maka pernahkah kamu memperhatikan air yang kamu minum?"</p>
+
+							<p>"Kamukah yang menurunkannya dari awan atau Kami yang menurunkannya?"</p>
+
+							<p>"Sekiranya Kami menghendaki, niscaya Kami menjadikannya asin. Maka mengapa kamu tidak bersyukur?"</p>
+						</div>
+
+						<!-- Reflection -->
+						<!-- <div class="mt-8 bg-emerald-900/10 border border-emerald-700/20 rounded-2xl p-5">
+							<h4 class="flex items-center gap-2 font-semibold text-emerald-300 mb-3">
+								<i data-lucide="leaf"></i>
+
+								Refleksi
+							</h4>
+
+							<p class="text-slate-300 leading-relaxed">
+								Sensor TDS digunakan untuk memantau jumlah zat terlarut di dalam air. Air yang berkualitas merupakan nikmat Allah SWT yang harus dijaga. Teknologi IoT membantu manusia memantau
+								kualitas air sebagai bentuk ikhtiar menjaga kelestarian lingkungan.
+							</p>
+						</div> -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Turbidity Modal -->
+			<div
+				id="turbidityModal"
+				class="modal fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm overflow-y-auto">
+				<div class="flex justify-center items-center w-full min-h-screen p-4">
+					<div class="glass relative w-full max-w-2xl rounded-3xl max-h-[90vh] overflow-y-auto p-6 md:p-8">
+						<button
+							onclick="closeModal('turbidityModal')"
+							class="absolute top-5 right-5 rounded-full bg-[#0F3D3E]/90 p-2 border border-[#5EEAD4]/20 text-slate-300 hover:bg-[#006D5B] hover:text-white">
+							<i data-lucide="x"></i>
+						</button>
+
+						<div class="flex items-center gap-3 mb-6">
+							<i
+								data-lucide="waves"
+								class="w-7 h-7 text-cyan-300"></i>
+
+							<div>
+								<h2 class="text-2xl font-bold">Turbidity</h2>
+								<p class="text-slate-400">Water Turbidity</p>
+							</div>
+						</div>
+
+						<div class="bg-[#0F3D3E]/60 border border-[#5EEAD4]/20 rounded-2xl p-4 mb-6">
+							<p class="text-slate-400 text-sm">Ayat Kauniyah</p>
+							<h3 class="text-lg font-semibold text-emerald-300">QS. An-Nur (24): 40</h3>
+						</div>
+
+						<div class="mb-6">
+							<p class="text-right text-3xl leading-loose text-slate-100">
+								أَوْ كَظُلُمَاتٍ فِي بَحْرٍ لُّجِّيٍّ يَغْشَاهُ مَوْجٌ مِّن فَوْقِهِ مَوْجٌ مِّن فَوْقِهِ سَحَابٌ ۚ ظُلُمَاتٌ بَعْضُهَا فَوْقَ بَعْضٍ
+							</p>
+						</div>
+
+						<div class="space-y-3 text-slate-300">
+							<p>"Atau seperti gelap gulita di lautan yang dalam, yang diliputi ombak, di atasnya ombak (pula), di atasnya lagi awan. Gelap gulita yang bertumpuk-tumpuk."</p>
+						</div>
+
+						<!-- <div class="mt-8 bg-emerald-900/10 border border-emerald-700/20 rounded-2xl p-5">
+							<h4 class="flex items-center gap-2 font-semibold text-emerald-300 mb-3">
+								<i data-lucide="leaf"></i>
+
+								Refleksi
+							</h4>
+
+							<p class="text-slate-300 leading-relaxed">
+								Sensor Turbidity digunakan untuk mengukur tingkat kekeruhan air. Semakin tinggi nilai turbidity, semakin banyak partikel tersuspensi yang mengurangi kejernihan air. Pemantauan secara
+								real-time membantu menjaga kualitas lingkungan perairan.
+							</p>
+						</div> -->
+					</div>
+				</div>
+			</div>
+
+			<!-- SOIL MOISTURE MODAL -->
+			<div
+				id="soilModal"
+				class="modal fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm overflow-y-auto">
+				<div class="flex justify-center items-center w-full min-h-screen p-4">
+					<div class="glass relative w-full max-w-2xl rounded-3xl max-h-[90vh] overflow-y-auto p-6 md:p-8">
+						<button
+							onclick="closeModal('soilModal')"
+							class="absolute top-5 right-5 rounded-full bg-[#0F3D3E]/90 p-2 border border-[#5EEAD4]/20 text-slate-300 hover:bg-[#006D5B] hover:text-white">
+							<i data-lucide="x"></i>
+						</button>
+
+						<div class="flex items-center gap-3 mb-6">
+							<i
+								data-lucide="sprout"
+								class="w-7 h-7 text-cyan-300"></i>
+
+							<div>
+								<h2 class="text-2xl font-bold">Soil Moisture</h2>
+
+								<p class="text-slate-400">Soil Water Content</p>
+							</div>
+						</div>
+
+						<div class="bg-[#0F3D3E]/60 border border-[#5EEAD4]/20 rounded-2xl p-4 mb-6">
+							<p class="text-slate-400 text-sm">Ayat Kauniyah</p>
+
+							<h3 class="text-lg font-semibold text-emerald-300">QS. Ar-Rum (30): 50</h3>
+						</div>
+
+						<div class="mb-6">
+							<p class="text-right text-3xl leading-loose text-slate-100">
+								فَانظُرْ إِلَىٰٓ ءَاثَٰرِ رَحْمَتِ ٱللَّهِ كَيْفَ يُحْيِ ٱلْأَرْضَ بَعْدَ مَوْتِهَا ۚ إِنَّ ذَٰلِكَ لَمُحْيِ ٱلْمَوْتَىٰ ۖ وَهُوَ عَلَىٰ كُلِّ شَىْءٍ قَدِيرٌ
+							</p>
+						</div>
+
+						<div class="space-y-3 text-slate-300">
+							<p>"Maka perhatikanlah bekas-bekas rahmat Allah, bagaimana Allah menghidupkan bumi setelah mati (kering). Sesungguhnya Allah benar-benar berkuasa atas segala sesuatu."</p>
+						</div>
+
+						<!-- <div class="mt-8 bg-emerald-900/10 border border-emerald-700/20 rounded-2xl p-5">
+							<h4 class="flex items-center gap-2 font-semibold text-emerald-300 mb-3">
+								<i data-lucide="leaf"></i>
+
+								Refleksi
+							</h4>
+
+							<p class="text-slate-300 leading-relaxed">
+								Kelembaban tanah merupakan faktor penting dalam pertumbuhan tanaman. Dengan sensor Soil Moisture, kondisi tanah dapat dipantau secara real-time sehingga irigasi dapat dilakukan secara
+								lebih efisien dan berkelanjutan sebagai bentuk ikhtiar menjaga amanah Allah SWT terhadap bumi.
+							</p>
+						</div> -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Temperature Modal -->
+			<div
+				id="temperatureModal"
+				class="modal fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm overflow-y-auto">
+				<div class="flex justify-center items-center w-full min-h-screen p-4">
+					<div class="glass relative w-full max-w-2xl rounded-3xl max-h-[90vh] overflow-y-auto p-6 md:p-8">
+						<button
+							onclick="closeModal('temperatureModal')"
+							class="absolute top-5 right-5 rounded-full bg-[#0F3D3E]/90 p-2 border border-[#5EEAD4]/20 text-slate-300 hover:bg-[#006D5B] hover:text-white">
+							<i data-lucide="x"></i>
+						</button>
+
+						<div class="flex items-center gap-3 mb-6">
+							<i
+								data-lucide="thermometer"
+								class="w-7 h-7 text-cyan-300"></i>
+							<div>
+								<h2 class="text-2xl font-bold">Temperature</h2>
+								<p class="text-slate-400">Ambient Temperature Control</p>
+							</div>
+						</div>
+
+						<div class="bg-[#0F3D3E]/60 border border-[#5EEAD4]/20 rounded-2xl p-4 mb-6">
+							<p class="text-slate-400 text-sm">Ayat Kauniyah</p>
+							<h3 class="text-lg font-semibold text-emerald-300">QS. An-Nahl (16): 81</h3>
+						</div>
+
+						<div class="mb-6">
+							<p class="text-right text-3xl leading-loose text-slate-100">
+								وَٱللَّهُ جَعَلَ لَكُم مِّمَّا خَلَقَ ظِلَٰلًا وَجَعَلَ لَكُم مِّنَ ٱلْجِبَالِ أَكْنَانًا وَجَعَلَ لَكُمُۥ سَرَٰبِيلَ تَقِيكُمُ ٱلْحَرَّ وَسَرَٰبِيلَ تَقِيكُم بَأْسَكُمْ ۚ كَذَٰلِكَ
+								يُتِمُّ نِعْمَتَهُۥ عَلَيْكُمْ لَعَلَّكُمْ تُسْلِمُونَ
+							</p>
+						</div>
+
+						<div class="space-y-3 text-slate-300">
+							<p>
+								"Dan Allah menjadikan tempat bernaung bagimu dari apa yang telah Dia ciptakan, dan Dia jadikan bagimu tempat-tempat tinggal di gunung-gunung, dan Dia jadikan bagimu pakaian yang
+								memeliharamu dari panas dan pakaian (baju besi) yang memeliharamu dalam peperangan. Demikianlah Allah menyempurnakan nikmat-Nya kepadamu agar kamu berserah diri (kepada-Nya)."
+							</p>
+						</div>
+
+						<!-- <div class="mt-8 bg-emerald-900/10 border border-emerald-700/20 rounded-2xl p-5">
+							<h4 class="flex items-center gap-2 font-semibold text-emerald-300 mb-3">
+								<i data-lucide="leaf"></i>
+								Refleksi
+							</h4>
+							<p class="text-slate-300 leading-relaxed">
+								Suhu lingkungan yang stabil adalah bentuk perlindungan dan nikmat Allah agar makhluk hidup dapat bertahan. Melalui pemantauan sensor suhu secara real-time, kita dapat menjaga ekosistem
+								agar tetap ideal, mencegah bahaya panas ekstrem, serta mengelola lingkungan secara bijak sebagai manifestasi rasa syukur atas kesempurnaan nikmat-Nya.
+							</p>
+						</div> -->
+					</div>
+				</div>
+			</div>
+
+			<!-- FOOTER -->
+			<footer class="glass mt-6 p-4 rounded-3xl shadow">
+				<div class="flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-gray-600">
+					<div class="flex items-center gap-2">
+						<i data-lucide="leaf"></i>
+						<span> AL-KAUNI </span>
+					</div>
+					<div>IoT Environment Monitoring</div>
+					<div class="text-center">© 2026 Rizky Project</div>
+				</div>
+			</footer>
+		</div>
+
+		<script src="app.js"></script>
+	</body>
+</html>
