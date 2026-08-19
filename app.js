@@ -572,7 +572,7 @@ function toggleRelay(state) {
 
     const payload = {
         mode: "relay",
-        state: state ? 1 : 0
+        state: state ? 0 : 1
     };
 
     if (state) {
