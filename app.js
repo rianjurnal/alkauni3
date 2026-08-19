@@ -591,7 +591,6 @@ function toggleRelay(state) {
     lucide.createIcons();
 }
 
-startDummy();
 loadMQTTConfig();
 loadSensorLog();
 
